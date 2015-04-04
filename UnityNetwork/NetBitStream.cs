@@ -8,5 +8,9 @@ namespace UnityNetwork
 {
     public class NetBitStream
     {
+        public const int header_length = 4;
+
+        public const int max_body_length = 512;
+
     }
 }
