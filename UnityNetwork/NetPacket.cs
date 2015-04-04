@@ -8,5 +8,6 @@ namespace UnityNetwork
 {
     class NetPacket
     {
+        public byte[] _bytes;
     }
 }
