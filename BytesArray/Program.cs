@@ -17,6 +17,7 @@ namespace BytesArray
 
             Stream s = new MemoryStream();
             s.Write(data1, 0, data1.Length);
+            s.Write(data2, 0, data2.Length);
         }
     }
 }
