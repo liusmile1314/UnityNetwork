@@ -58,10 +58,16 @@ namespace BytesArray
 
                 ms.Seek(0, SeekOrigin.Begin);
 
-                Player obj = (Player)bf.Deserialize(ms);
-
-                Console.WriteLine(" \n" + obj.Id + " \n" + obj.Name + " \n" + obj.Life);
+                File.WriteAllBytes(@"E:/Info.txt", ms.ToArray());
             }
+
+            byte[] byteInfo = File.ReadAllBytes(@"E:/Info.txt");
+
+            Player obj = (Player)bf.Deserialize(new MemoryStream(byteInfo));
+
+            Console.WriteLine(" \n" + obj.Id + " \n" + obj.Name + " \n" + obj.Life);
+
+            Console.ReadLine();
         }
     }
 
