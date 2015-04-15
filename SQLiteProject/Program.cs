@@ -5,6 +5,8 @@ using System.Text;
 
 using System.Data.Common;
 using System.Data.SQLite;
+using System.IO;
+using System.Windows.Forms;
 
 namespace SQLiteProject
 {
@@ -91,7 +93,22 @@ namespace SQLiteProject
         }
         static void Main(string[] args)
         {
-            Console.WriteLine("Path : " + Environment.CurrentDirectory);
+            //控制台根目录
+            Console.WriteLine(Environment.CurrentDirectory);
+
+            Console.WriteLine(Directory.GetCurrentDirectory());
+
+            Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
+
+            Console.WriteLine(System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase);
+
+            Console.WriteLine(Application.StartupPath);
+
+            Console.WriteLine(Application.ExecutablePath);
+
+            MessageBox.Show("Title", "Hello", MessageBoxButtons.OK, MessageBoxIcon.None);
+
+            //Directory.GetParent()
 
             Delete();
                 Select();
