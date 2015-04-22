@@ -1,6 +1,8 @@
-﻿using System;
+﻿#define DoTrace
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +34,30 @@ namespace Exercise
 
             Console.ReadLine();
 
+            var bc = new BaseClass();
+
+            var dc = new DerivedClass();
+
+            BaseClass[] classArray = new BaseClass[] { bc, dc };
+
+            foreach (var item in classArray)
+            {
+                Type t = item.GetType();//typeof(DerivedClass);
+
+                Console.WriteLine("Object type : {0}", t.Name);
+
+                FieldInfo[] fi = t.GetFields();
+
+                foreach (var f in fi)
+                {
+                    Console.WriteLine(" Field : {0}", f.Name);
+                }
+                Console.WriteLine();
+            }
+            PrintOut("Hello World.");
+
+            PrintOut("Happy End.");
+            Console.ReadLine();
             /*******************************************/
 
             Thread[] threads = new Thread[10];
@@ -44,7 +70,7 @@ namespace Exercise
 
                 threads[i] = tempThread;
             }
-
+            
 
             for (int i = 0; i < 10; i++)
             {
@@ -69,6 +95,24 @@ namespace Exercise
             //buf[index++] = Convert.ToByte(body.Length >> 8 & 0xFF);
             //buf[index++] = Convert.ToByte(body.Length & 0xFF);
         }
+
+        [System.Diagnostics.Conditional("DoTrace")]
+        [Obsolete("Use Method Console.")]
+        //[Obsolete("Use Method Console.",true)]
+        static void PrintOut(string str)
+        {
+            Console.WriteLine(str);
+        }
+    }
+
+    class BaseClass
+    {
+        public int BaseField = 0;
+    }
+
+    class DerivedClass : BaseClass
+    {
+        public int DerivedField = 0;
     }
 
     class Account
