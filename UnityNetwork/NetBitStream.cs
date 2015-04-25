@@ -14,133 +14,59 @@ namespace UnityNetwork
     /// </summary>
     public class NetBitStream
     {
-        public const int header_length = 4;
+        public Socket SocketObj = null;
 
-        public const int max_body_length = 512;
+        public const int HeaderLength = 4;
 
-        public const int BYTE_LEN = 1;
+        public const int MaxBodyLength = 512;
 
         public const int INT32_LEN = 4;
 
-        public const int SHORT16_LEN = 2;
+        /************************************************/
 
-        public const int FLOAT_LEN = 4;
+        public int ReadLength
+        { get; set; }
 
-        private byte[] _bytes = null;
+        public int BodyLength
+        { get; set; }
 
-        public byte[] BYTES {
-            get {
-                return _bytes;
-            }
-            set {
-                _bytes = value;
-            }
-        }
-
-        private int _bodyLength = 0;
-
-        public int BodyLength {
-            get { return _bodyLength; }
-        }
-
-        public int Length 
-        {
-            get { return header_length + _bodyLength; }
-        }
-
-        public Socket _socket = null;
-
-        public int readLength { get; set; }
+        public byte[] Bytes
+        { get; set; }
 
         public NetBitStream()
         {
-            readLength = 0;
+            ReadLength = 0;
 
-            _bodyLength = 0;
+            BodyLength = 0;
 
-            _bytes = new Byte[header_length + max_body_length];
+            Bytes = new Byte[HeaderLength + MaxBodyLength];
         }
 
         public void Reset()
         {
-            readLength = 0;
+            ReadLength = 0;
 
-            _bodyLength = 0;
+            BodyLength = 0;
         }
 
-        public void WriteByte(byte bt)
+        /************************************************/
+
+        public void BeginWrite(string msg)
         {
-            if (_bodyLength + BYTE_LEN > max_body_length) return;
+            BodyLength = 0;
 
-            _bytes[header_length + _bodyLength] = bt;
-
-            _bodyLength += BYTE_LEN;
-        }
-
-        public void WriteBool(bool flag)
-        {
-            if (_bodyLength + BYTE_LEN > max_body_length) return;
-
-            byte bt = flag ? (byte)'1' : (byte)'0';
-
-            _bytes[header_length + _bodyLength] = bt;
-
-            _bodyLength += BYTE_LEN;
+            this.WriteString(msg);
         }
 
         public void WriteInt(int number)
         {
-            if (_bodyLength + INT32_LEN > max_body_length) return;
+            if (BodyLength + INT32_LEN > MaxBodyLength) return;
 
             byte[] bs = System.BitConverter.GetBytes(number);
 
-            bs.CopyTo(_bytes, header_length + _bodyLength);
+            bs.CopyTo(Bytes, HeaderLength + BodyLength);
 
-            _bodyLength += INT32_LEN;
-        }
-
-        public void WriteUInt(uint number)
-        {
-            if (_bodyLength + INT32_LEN > max_body_length) return;
-
-            byte[] bs = System.BitConverter.GetBytes(number);
-
-            bs.CopyTo(_bytes, header_length + _bodyLength);
-
-            _bodyLength += INT32_LEN;
-        }
-
-        public void WriteShort(short number)
-        {
-            if (_bodyLength + SHORT16_LEN > max_body_length) return;
-
-            byte[] bs = System.BitConverter.GetBytes(number);
-
-            bs.CopyTo(_bytes, header_length + _bodyLength);
-
-            _bodyLength += SHORT16_LEN;
-        }
-
-        public void WriteUShort(ushort number)
-        {
-            if (_bodyLength + SHORT16_LEN > max_body_length) return;
-
-            byte[] bs = System.BitConverter.GetBytes(number);
-
-            bs.CopyTo(_bytes, header_length + _bodyLength);
-
-            _bodyLength += SHORT16_LEN;
-        }
-
-        public void WriteFloat(float number)
-        {
-            if (_bodyLength + FLOAT_LEN > max_body_length) return;
-
-            byte[] bs = System.BitConverter.GetBytes(number);
-
-            bs.CopyTo(_bytes, header_length + _bodyLength);
-
-            _bodyLength += FLOAT_LEN;
+            BodyLength += INT32_LEN;
         }
 
         public void WriteString(string str)
@@ -149,22 +75,22 @@ namespace UnityNetwork
 
             this.WriteInt(len);
 
-            if (_bodyLength + len > max_body_length) return;
+            if (BodyLength + len > MaxBodyLength) return;
 
-            System.Text.Encoding.UTF8.GetBytes(str, 0, str.Length, _bytes, header_length + _bodyLength);
+            System.Text.Encoding.UTF8.GetBytes(str, 0, str.Length, Bytes, HeaderLength + BodyLength);
 
-            _bodyLength += len;
+            BodyLength += len;
         }
 
         public void WriteStream(byte[] bs)
         {
             this.WriteInt(bs.Length);
 
-            if (_bodyLength + bs.Length > max_body_length) return;
+            if (BodyLength + bs.Length > MaxBodyLength) return;
 
-            bs.CopyTo(bs, header_length + _bodyLength);
+            bs.CopyTo(bs, HeaderLength + BodyLength);
 
-            _bodyLength += bs.Length;
+            BodyLength += bs.Length;
         }
 
         public void WriteObject<T>(T obj)
@@ -173,21 +99,83 @@ namespace UnityNetwork
 
             this.WriteStream(bs);
         }
-        public void BeginWrite(string msg)
-        {
-            _bodyLength = 0;
-
-            this.WriteString(msg);
-        }
 
         public void EncodeHeader()
         {
-            byte[] bs = System.BitConverter.GetBytes(_bodyLength);
+            byte[] bs = System.BitConverter.GetBytes(BodyLength);
 
-            bs.CopyTo(_bytes, 0);
+            bs.CopyTo(Bytes, 0);
         }
 
+        /************************************************/
+        public void BeginRead(out string msg)
+        {
+            BodyLength = 0;
 
+            ReadString(out msg);
+        }
+
+        public void ReadInt(out int number)
+        {
+            number = 0;
+
+            if (BodyLength + INT32_LEN > MaxBodyLength) return;
+
+            number = System.BitConverter.ToInt32(Bytes, HeaderLength + BodyLength);
+
+            BodyLength += INT32_LEN;
+
+        }
+
+        public void ReadString(out string str)
+        {
+            str = "";
+
+            int len = 0;
+
+            ReadInt(out len);
+
+            if (BodyLength + len > MaxBodyLength) return;
+
+            str = System.Text.Encoding.UTF8.GetString(Bytes, HeaderLength + BodyLength, len);
+
+            BodyLength += len;
+
+        }
+
+        public byte[] ReadStream()
+        {
+            int len = 0;
+
+            this.ReadInt(out len);
+
+            if (BodyLength + len > MaxBodyLength) return null;
+
+            byte[] bs = new byte[len];
+
+            for (int index = 0; index < len; index++)
+            {
+                bs[index] = Bytes[HeaderLength + BodyLength + index];
+            }
+            BodyLength += len;
+
+            return bs;
+        }
+
+        public T ReadObject<T>()
+        {
+            byte[] bs = this.ReadStream();
+
+            if (bs == null) return default(T);
+
+            return this.Deserialize<T>(bs);
+        }
+
+        public void DecodeHeader()
+        {
+            BodyLength = System.BitConverter.ToInt32(Bytes, 0);
+        }
+        /************************************************/
         public byte[] Serialize<T>(T t)
         {
             using (MemoryStream stream = new MemoryStream())
@@ -231,6 +219,83 @@ namespace UnityNetwork
                 }
             }
         }
-
     }
 }
+
+
+#region RetainContent
+        //public int Length 
+        //{
+        //    get { return HeaderLength + BodyLength; }
+        //}
+
+
+//public void WriteByte(byte bt)
+//        {
+//            if (BodyLength + BYTE_LEN > MaxBodyLength) return;
+
+//            Bytes[HeaderLength + BodyLength] = bt;
+
+//            BodyLength += BYTE_LEN;
+//        }
+        //public const int BYTE_LEN = 1;
+
+        //public const int SHORT16_LEN = 2;
+
+        //public const int FLOAT_LEN = 4;
+
+//public void WriteBool(bool flag)
+//{
+//    if (BodyLength + BYTE_LEN > MaxBodyLength) return;
+
+//    byte bt = flag ? (byte)'1' : (byte)'0';
+
+//    Bytes[HeaderLength + BodyLength] = bt;
+
+//    BodyLength += BYTE_LEN;
+//}
+
+//public void WriteUInt(uint number)
+//{
+//    if (BodyLength + INT32_LEN > MaxBodyLength) return;
+
+//    byte[] bs = System.BitConverter.GetBytes(number);
+
+//    bs.CopyTo(Bytes, HeaderLength + BodyLength);
+
+//    BodyLength += INT32_LEN;
+//}
+
+//public void WriteShort(short number)
+//{
+//    if (BodyLength + SHORT16_LEN > MaxBodyLength) return;
+
+//    byte[] bs = System.BitConverter.GetBytes(number);
+
+//    bs.CopyTo(Bytes, HeaderLength + BodyLength);
+
+//    BodyLength += SHORT16_LEN;
+//}
+
+//public void WriteUShort(ushort number)
+//{
+//    if (BodyLength + SHORT16_LEN > MaxBodyLength) return;
+
+//    byte[] bs = System.BitConverter.GetBytes(number);
+
+//    bs.CopyTo(Bytes, HeaderLength + BodyLength);
+
+//    BodyLength += SHORT16_LEN;
+//}
+
+//public void WriteFloat(float number)
+//{
+//    if (BodyLength + FLOAT_LEN > MaxBodyLength) return;
+
+//    byte[] bs = System.BitConverter.GetBytes(number);
+
+//    bs.CopyTo(Bytes, HeaderLength + BodyLength);
+
+//    BodyLength += FLOAT_LEN;
+//} 
+#endregion

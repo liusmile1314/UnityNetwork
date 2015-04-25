@@ -6,7 +6,10 @@ using System.Text;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
-using System.Windows.Forms;
+
+using ProtoBuf;
+using ChatAPP;
+
 
 namespace SQLiteProject
 {
@@ -93,6 +96,97 @@ namespace SQLiteProject
         }
         static void Main(string[] args)
         {
+
+            ChatAPP.User user = new ChatAPP.User();
+
+            user.name = "Liusmile";
+
+            user.email = "Forever Love";
+
+
+            using (MemoryStream msUser = new MemoryStream())
+            {
+                ProtoBuf.Meta.RuntimeTypeModel model = ChatSerializer.Create();
+
+                //ProtoBuf.Serializer.Serialize<ChatAPP.User>(msUser, user);
+
+                model.Serialize(msUser, user);
+                
+                Byte[] bs = msUser.ToArray();
+
+                File.WriteAllBytes("F:/ChatAPP.txt", bs);
+            }
+
+            using (MemoryStream msUser = new MemoryStream(File.ReadAllBytes("F:/ChatAPP.txt")))
+            {
+                ProtoBuf.Meta.RuntimeTypeModel model = ChatSerializer.Create();
+
+                //ChatAPP.User userRead = ProtoBuf.Serializer.Deserialize<ChatAPP.User>(msUser);
+
+                ChatAPP.User userRead = (ChatAPP.User)model.Deserialize(msUser, null, typeof(ChatAPP.User));
+
+                Console.WriteLine(userRead.name + " " + userRead.email);
+            }
+
+            Console.ReadLine();
+            
+            /*
+            ChatAPP.Chat chat = new ChatAPP.Chat();
+
+            ChatAPP.User user = new ChatAPP.User();
+
+            user.name = "Liusmile";
+
+            user.email = "Forever Love";
+
+            ChatAPP.User user1 = new ChatAPP.User();
+
+            user1.name = "Turing";
+
+            user1.email = "Computer Sciences";
+
+            chat.user.Add(user);
+
+            chat.user.Add(user1);
+
+            //Byte[] bs = null;
+
+            using (MemoryStream msUser = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize<ChatAPP.User>(msUser, user);
+
+                Byte[] bs = msUser.ToArray();
+
+                File.WriteAllBytes("F:/ChatAPP.txt", bs);
+            }
+
+            using (MemoryStream msChat = new MemoryStream())
+            {
+                ProtoBuf.Serializer.Serialize<ChatAPP.Chat>(msChat, chat);
+
+                File.WriteAllBytes("F:/All.txt", msChat.ToArray());
+            }
+
+            using (MemoryStream msRead = new MemoryStream(File.ReadAllBytes("F:/ChatAPP.txt")))
+            {
+                ChatAPP.User userRead = ProtoBuf.Serializer.Deserialize<ChatAPP.User>(msRead);
+
+                Console.WriteLine( userRead.name + " " + userRead.email);
+            }
+
+            Console.WriteLine("_________________________");
+
+            using (MemoryStream mschatRead = new MemoryStream(File.ReadAllBytes("F:/All.txt")))
+            {
+                ChatAPP.Chat chatRead = ProtoBuf.Serializer.Deserialize<ChatAPP.Chat>(mschatRead);
+
+                for (int i = 0; i < chatRead.user.Count; i++)
+                {
+                    Console.WriteLine(chatRead.user[i].name + " " + chatRead.user[i].email);
+                }
+            }
+            */
+          
             //控制台根目录
             Console.WriteLine(Environment.CurrentDirectory);
 
@@ -102,11 +196,11 @@ namespace SQLiteProject
 
             Console.WriteLine(System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase);
 
-            Console.WriteLine(Application.StartupPath);
+            //Console.WriteLine(Application.StartupPath);
 
-            Console.WriteLine(Application.ExecutablePath);
+            //Console.WriteLine(Application.ExecutablePath);
 
-            MessageBox.Show("Title", "Hello", MessageBoxButtons.OK, MessageBoxIcon.None);
+            //MessageBox.Show("Title", "Hello", MessageBoxButtons.OK, MessageBoxIcon.None);
 
             //Directory.GetParent()
 

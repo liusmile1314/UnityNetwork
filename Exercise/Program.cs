@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -11,6 +13,9 @@ namespace Exercise
     {
         static void Main(string[] args)
         {
+            processCommand("Notepad",@"F:\ChatAPP.txt");
+
+            Console.ReadLine();
 
             int number = 10;
 
@@ -69,6 +74,76 @@ namespace Exercise
             //buf[index++] = Convert.ToByte(body.Length >> 8 & 0xFF);
             //buf[index++] = Convert.ToByte(body.Length & 0xFF);
         }
+
+        public static void processCommand(string command, string argument)
+        {
+            ProcessStartInfo start = new ProcessStartInfo(command);
+
+            start.Arguments = argument;
+
+            start.CreateNoWindow = false;
+
+            start.ErrorDialog = true;
+
+            start.UseShellExecute = true;
+
+            if (start.UseShellExecute)
+            {
+                start.RedirectStandardError = false;
+
+                start.RedirectStandardInput = false;
+
+                start.RedirectStandardOutput = false;
+            }
+            else
+            {
+                start.RedirectStandardError = true;
+
+                start.RedirectStandardInput = true;
+
+                start.RedirectStandardOutput = true;
+
+                start.StandardErrorEncoding = System.Text.UTF8Encoding.UTF8;
+
+                start.StandardOutputEncoding = System.Text.UTF8Encoding.UTF8;
+            }
+
+            Process p = Process.Start(start);
+
+            if (!start.UseShellExecute)
+            {
+                printOutPut(p.StandardError);
+
+                printOutPut(p.StandardOutput);
+            }
+
+            p.WaitForExit();
+
+            p.Close();
+        }
+        //http://www.unitymanual.com/thread-39325-1-1.html
+
+        static void printOutPut(StreamReader reader,bool flag = false)
+        {
+            string line = reader.ReadLine();
+
+            while (!reader.EndOfStream)
+            {
+                if (flag)
+                {
+                    //Debug.log(line);
+                }
+                else
+                {
+                    Console.WriteLine(line);
+                }
+
+                line = reader.ReadLine();
+            }
+
+            reader.Close();
+        }
+
     }
 
     class Account
