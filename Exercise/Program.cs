@@ -1,4 +1,5 @@
 ﻿#define DoTrace
+#define ChangeStr
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -64,6 +65,8 @@ namespace Exercise
 
             PrintOut("Happy End.");
 
+            ChangeStr("LiuSmile");
+
             Console.ReadLine();
             /*******************************************/
 
@@ -109,6 +112,13 @@ namespace Exercise
         static void PrintOut(string str)
         {
             Console.WriteLine(str);
+        }
+
+        [Obsolete("ChangeStr Obsolete."),Conditional("ChangeStr")]
+        
+        static void ChangeStr(string str)
+        {
+           Console.WriteLine( str + " End." );
         }
 
         public static void processCommand(string command, string argument)
