@@ -30,6 +30,11 @@ namespace UnityNetwork
         public int BodyLength
         { get; set; }
 
+        public int Length
+        {
+            get { return HeaderLength + BodyLength; }
+        }
+
         public byte[] Bytes
         { get; set; }
 
